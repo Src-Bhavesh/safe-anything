@@ -322,7 +322,7 @@ pub static RULES: &[Rule] = &[
     secret!(
         "secret.doppler-token",
         Critical,
-        r"\bdp\.pt\.[A-Za-z0-9]{40,44}\b",
+        r"\bdp\.pt\.[A-Za-z0-9]{43}\b",
         "A Doppler personal token is written in the file."
     ),
     secret!(

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Secrets: new critical rule `secret.doppler-token` for Doppler personal tokens (`dp.pt.` followed by 40–44 letters and digits).
+- Secrets: new critical rule `secret.doppler-token` for Doppler personal tokens (`dp.pt.` followed by 43 letters and digits).
 
 - Config: `config.gha-script-injection` also checks `workflow_run` workflows, so
   `github.event.workflow_run.head_branch`, `.display_title`, `.head_commit.message` and the head commit's

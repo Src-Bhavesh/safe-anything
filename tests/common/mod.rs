@@ -115,8 +115,7 @@ pub fn fake(name: &str) -> String {
             .concat()
             .to_uppercase(),
         "doppler-token" => ["dp", ".pt.", &body(43, MIXED)].concat(),
-        "doppler-40" => ["dp", ".pt.", &body(40, MIXED)].concat(),
-        "doppler-44" => ["dp", ".pt.", &body(44, MIXED)].concat(),
+        "doppler-42" => ["dp", ".pt.", &body(42, MIXED)].concat(),
         "doppler-short" => ["dp", ".pt.", &body(39, MIXED)].concat(),
         "doppler-upper" => ["DP", ".PT.", &body(43, MIXED)].concat(),
         "pulumi-token" => ["pu", "l-", &body(40, HEX)].concat(),
