@@ -21,6 +21,54 @@ fn shell(f: &FileInfo) -> bool {
 fn workflow(f: &FileInfo) -> bool {
     f.under(".github/workflows/") && f.ext_in(&["yml", "yaml"])
 }
+
+// A `#` inside a block scalar is script text, not a YAML comment.
+fn block_scalar_indent(line: &str) -> Option<usize> {
+    let indent = line.len() - line.trim_start().len();
+    let content = line
+        .trim_start()
+        .strip_prefix("- ")
+        .unwrap_or(line.trim_start());
+    let (key, value) = content.split_once(':')?;
+    if !matches!(key.trim(), "run" | "script") {
+        return None;
+    }
+    let value = value.trim_start();
+    if !value.starts_with('|') && !value.starts_with('>') {
+        return None;
+    }
+    let indicator: Vec<char> = value[1..].split('#').next()?.trim().chars().collect();
+    let valid = match indicator.as_slice() {
+        [] => true,
+        [one] => matches!(one, '+' | '-' | '1'..='9'),
+        [one, two] => {
+            (matches!(one, '+' | '-') && matches!(two, '1'..='9'))
+                || (matches!(one, '1'..='9') && matches!(two, '+' | '-'))
+        }
+        _ => false,
+    };
+    valid.then_some(indent)
+}
+
+fn in_workflow_block_scalar(text: &Text, line_no: usize) -> bool {
+    let mut block_indent = None;
+    for n in 1..line_no {
+        let line = text.line(n);
+        if line.trim().is_empty() {
+            continue;
+        }
+        let indent = line.len() - line.trim_start().len();
+        if block_indent.is_some_and(|block| indent <= block) {
+            block_indent = None;
+        }
+        if block_indent.is_none() {
+            block_indent = block_scalar_indent(line);
+        }
+    }
+    let line = text.line(line_no);
+    let indent = line.len() - line.trim_start().len();
+    block_indent.is_some_and(|block| !line.trim().is_empty() && indent > block)
+}
 fn shell_or_workflow(f: &FileInfo) -> bool {
     shell(f) || workflow(f)
 }
@@ -399,7 +447,9 @@ pub fn keep(file: &FileInfo, text: &Text, f: &Finding, hcl: &mut HclWalk) -> boo
         }
         "config.gha-script-injection" if workflow(file) => {
             let line = text.line(f.line);
-            !line.trim_start().starts_with('#')
+            let yaml_comment =
+                line.trim_start().starts_with('#') && !in_workflow_block_scalar(text, f.line);
+            !yaml_comment
                 && YAML_KEY
                     .captures(line)
                     .is_none_or(|c| &c[1] == "run" || &c[1] == "script")
