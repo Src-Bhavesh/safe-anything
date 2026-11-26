@@ -56,4 +56,5 @@ k8s/deploy.yaml:6 config.privileged-container
 nginx.conf:2 config.nginx-autoindex
 nginx.conf:3 config.weak-tls-version
 .github/workflows/ci.yml:34 config.gha-script-injection
-.github/workflows/ci.yml:39 config.gha-script-injection
+.github/workflows/ci.yml:38 config.gha-script-injection
+.github/workflows/ci.yml:42 config.gha-script-injection

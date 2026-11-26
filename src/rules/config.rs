@@ -23,7 +23,7 @@ fn workflow(f: &FileInfo) -> bool {
 }
 
 // A `#` inside a block scalar is script text, not a YAML comment.
-fn block_scalar_indent(line: &str) -> Option<usize> {
+fn block_scalar_indent(line: &str) -> Option<(usize, Option<usize>)> {
     let indent = line.len() - line.trim_start().len();
     let content = line
         .trim_start()
@@ -47,27 +47,44 @@ fn block_scalar_indent(line: &str) -> Option<usize> {
         }
         _ => false,
     };
-    valid.then_some(indent)
+    let explicit = indicator
+        .iter()
+        .find(|c| c.is_ascii_digit())
+        .and_then(|c| c.to_digit(10))
+        .map(|n| indent + n as usize);
+    valid.then_some((indent, explicit))
 }
 
 fn in_workflow_block_scalar(text: &Text, line_no: usize) -> bool {
-    let mut block_indent = None;
-    for n in 1..line_no {
+    let mut block: Option<(usize, Option<usize>)> = None;
+    for n in 1..=line_no {
         let line = text.line(n);
-        if line.trim().is_empty() {
-            continue;
-        }
         let indent = line.len() - line.trim_start().len();
-        if block_indent.is_some_and(|block| indent <= block) {
-            block_indent = None;
+        if let Some((header_indent, content_indent)) = block {
+            if line.trim().is_empty() {
+                if n == line_no {
+                    return false;
+                }
+                continue;
+            }
+            if indent <= header_indent {
+                block = None;
+            } else {
+                let content_indent = content_indent.unwrap_or_else(|| {
+                    block = Some((header_indent, Some(indent)));
+                    indent
+                });
+                if n == line_no {
+                    return indent >= content_indent;
+                }
+                continue;
+            }
         }
-        if block_indent.is_none() {
-            block_indent = block_scalar_indent(line);
+        if let Some((header_indent, explicit_content_indent)) = block_scalar_indent(line) {
+            block = Some((header_indent, explicit_content_indent));
         }
     }
-    let line = text.line(line_no);
-    let indent = line.len() - line.trim_start().len();
-    block_indent.is_some_and(|block| !line.trim().is_empty() && indent > block)
+    false
 }
 fn shell_or_workflow(f: &FileInfo) -> bool {
     shell(f) || workflow(f)

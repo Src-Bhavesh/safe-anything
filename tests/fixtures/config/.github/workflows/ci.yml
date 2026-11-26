@@ -33,6 +33,9 @@ jobs:
       - run: |
           # ${{ github.event.pull_request.title }}
           echo "keep checking script comments"
+        # ${{ github.event.pull_request.title }}
+      - run: |2
+        # ${{ github.event.pull_request.body }}
       - uses: actions/github-script@v7
         with:
           script: |
