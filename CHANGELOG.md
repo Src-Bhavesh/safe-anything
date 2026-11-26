@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Config: `config.gha-script-injection` ignores commented-out workflow lines.
+
 - Config: `config.gha-script-injection` also checks `workflow_run` workflows, so
   `github.event.workflow_run.head_branch`, `.display_title`, `.head_commit.message` and the head commit's
   author and committer name and email pasted into a `run:` step are reported. Fields the triggering run

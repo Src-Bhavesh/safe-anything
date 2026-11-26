@@ -397,9 +397,13 @@ pub fn keep(file: &FileInfo, text: &Text, f: &Finding, hcl: &mut HclWalk) -> boo
             FROM.captures(text.line(f.line))
                 .is_none_or(|c| !stages.contains(&c[1].to_ascii_lowercase()))
         }
-        "config.gha-script-injection" if workflow(file) => YAML_KEY
-            .captures(text.line(f.line))
-            .is_none_or(|c| &c[1] == "run" || &c[1] == "script"),
+        "config.gha-script-injection" if workflow(file) => {
+            let line = text.line(f.line);
+            !line.trim_start().starts_with('#')
+                && YAML_KEY
+                    .captures(line)
+                    .is_none_or(|c| &c[1] == "run" || &c[1] == "script")
+        }
         // In a workflow only a `run:` step (or a line of its block) runs; a step `name:` or a
         // commented-out line doesn't.
         "config.remote-script" if workflow(file) => {
