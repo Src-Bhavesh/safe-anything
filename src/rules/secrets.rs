@@ -320,6 +320,12 @@ pub static RULES: &[Rule] = &[
         "A DigitalOcean token is written in the file."
     ),
     secret!(
+        "secret.doppler-token",
+        Critical,
+        r"\bdp\.pt\.[A-Za-z0-9]{40,44}\b",
+        "A Doppler personal token is written in the file."
+    ),
+    secret!(
         "secret.twilio-api-key",
         Critical,
         r"\bSK[0-9a-f]{32}\b",
