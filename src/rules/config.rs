@@ -24,11 +24,9 @@ fn workflow(f: &FileInfo) -> bool {
 
 // A `#` inside a block scalar is script text, not a YAML comment.
 fn block_scalar_indent(line: &str) -> Option<(usize, Option<usize>)> {
-    let indent = line.len() - line.trim_start().len();
-    let content = line
-        .trim_start()
-        .strip_prefix("- ")
-        .unwrap_or(line.trim_start());
+    let trimmed = line.trim_start();
+    let content = trimmed.strip_prefix("- ").map_or(trimmed, str::trim_start);
+    let indent = line.len() - content.len();
     let (key, value) = content.split_once(':')?;
     if !matches!(key.trim(), "run" | "script") {
         return None;
@@ -86,6 +84,7 @@ fn in_workflow_block_scalar(text: &Text, line_no: usize) -> bool {
     }
     false
 }
+
 fn shell_or_workflow(f: &FileInfo) -> bool {
     shell(f) || workflow(f)
 }

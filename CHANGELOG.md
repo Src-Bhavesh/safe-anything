@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-- Config: `config.gha-script-injection` ignores YAML comments in workflows.
-
+- Config: `config.gha-script-injection` skips a commented-out workflow line like
+  `# - run: echo "${{ github.event.pull_request.title }}"`. A `#` line inside a `run: |` or `script: |`
+  block is still reported, since the expression is filled in before the shell sees the comment.
 - Config: `config.gha-script-injection` also checks `workflow_run` workflows, so
   `github.event.workflow_run.head_branch`, `.display_title`, `.head_commit.message` and the head commit's
   author and committer name and email pasted into a `run:` step are reported. Fields the triggering run
